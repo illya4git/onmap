@@ -4,10 +4,11 @@ import SearchBar from './SearchBar';
 export default function Sidebar({
                                     isOpen, toggleSidebar, setMapCenter,
                                     points, setPoints,
-                                    pickingMode, setPickingMode
+                                    pickingMode, setPickingMode,
+                                    onLoadGraph, onClearGraph, isGraphLoading, graphStats,
+                                    activeAlgorithm, setActiveAlgorithm, onRunAlgorithm, isAlgoRunning, algoStats
                                 }) {
 
-    // Closure to dynamically update the specific point type
     const updatePoint = (type) => (newPoint) => {
         setPoints(prev => ({ ...prev, [type]: newPoint }));
     };
@@ -23,6 +24,32 @@ export default function Sidebar({
                 <div className="control-group">
                     <h3>City Center</h3>
                     <SearchBar setMapCenter={setMapCenter} />
+                </div>
+
+                {/* NEW GRAPH CONTROLS */}
+                <div className="control-group">
+                    <h3>Network Graph</h3>
+                    {!graphStats ? (
+                        <button
+                            onClick={onLoadGraph}
+                            disabled={isGraphLoading}
+                            style={{ padding: '8px', width: '100%', cursor: 'pointer', marginBottom: '10px' }}
+                        >
+                            {isGraphLoading ? 'Downloading & Parsing...' : 'Load Area into Engine'}
+                        </button>
+                    ) : (
+                        <>
+                            <p style={{fontSize: '0.85rem', color: '#16a34a', marginBottom: '10px', fontWeight: 'bold'}}>
+                                Graph ready! Nodes: {graphStats.nodes}
+                            </p>
+                            <button
+                                onClick={onClearGraph}
+                                style={{ padding: '8px', width: '100%', cursor: 'pointer', backgroundColor: '#fecaca', border: '1px solid #ef4444' }}
+                            >
+                                Clear Graph & Show Map
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 <div className="control-group">
@@ -45,6 +72,38 @@ export default function Sidebar({
                     />
                 </div>
 
+                {/* NEW: Algorithm Execution Controls */}
+                <div className="control-group">
+                    <h3>Runner</h3>
+                    <select
+                        value={activeAlgorithm}
+                        onChange={(e) => setActiveAlgorithm(e.target.value)}
+                        disabled={isAlgoRunning || !graphStats}
+                        style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+                    >
+                        <option value="BFS">Breadth-First Search</option>
+                        <option value="Dijkstra">Dijkstra's Algorithm</option>
+                        <option value="AStar">A* Search</option>
+                    </select>
+
+                    <button
+                        onClick={onRunAlgorithm}
+                        disabled={isAlgoRunning || !graphStats || !points.start || !points.end}
+                        style={{ padding: '10px', width: '100%', cursor: 'pointer', backgroundColor: '#22c55e', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '4px' }}
+                    >
+                        {isAlgoRunning ? 'Running...' : 'Find Path'}
+                    </button>
+
+                    {/* Stats Readout */}
+                    {algoStats && (
+                        <div style={{ marginTop: '15px', fontSize: '0.85rem', background: '#f8fafc', padding: '10px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                            <p><strong>Nodes Explored:</strong> {algoStats.nodesExplored}</p>
+                            <p><strong>Max Frontier Size:</strong> {algoStats.maxFrontierSize}</p>
+                            <p><strong>Time:</strong> {algoStats.executionTimeMs.toFixed(2)} ms</p>
+                            <p><strong>Distance:</strong> {(algoStats.pathDistanceMeters / 1000).toFixed(2)} km</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </aside>
     );

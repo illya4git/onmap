@@ -6,7 +6,8 @@ export default function Sidebar({
                                     points, setPoints,
                                     pickingMode, setPickingMode,
                                     onLoadGraph, onClearGraph, isGraphLoading, graphStats,
-                                    activeAlgorithm, setActiveAlgorithm, onRunAlgorithm, isAlgoRunning, algoStats
+                                    activeAlgorithm, setActiveAlgorithm, onRunAlgorithm, isAlgoRunning, algoStats,
+                                    playbackSpeed, setPlaybackSpeed, isPaused, setIsPaused, onStepForward
                                 }) {
 
     const updatePoint = (type) => (newPoint) => {
@@ -26,7 +27,6 @@ export default function Sidebar({
                     <SearchBar setMapCenter={setMapCenter} />
                 </div>
 
-                {/* NEW GRAPH CONTROLS */}
                 <div className="control-group">
                     <h3>Network Graph</h3>
                     {!graphStats ? (
@@ -72,13 +72,12 @@ export default function Sidebar({
                     />
                 </div>
 
-                {/* NEW: Algorithm Execution Controls */}
                 <div className="control-group">
                     <h3>Runner</h3>
                     <select
                         value={activeAlgorithm}
                         onChange={(e) => setActiveAlgorithm(e.target.value)}
-                        disabled={isAlgoRunning || !graphStats}
+                        disabled={isAlgoRunning && !isPaused}
                         style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
                     >
                         <option value="BFS">Breadth-First Search</option>
@@ -88,11 +87,42 @@ export default function Sidebar({
 
                     <button
                         onClick={onRunAlgorithm}
-                        disabled={isAlgoRunning || !graphStats || !points.start || !points.end}
+                        disabled={isAlgoRunning && !isPaused}
                         style={{ padding: '10px', width: '100%', cursor: 'pointer', backgroundColor: '#22c55e', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '4px' }}
                     >
-                        {isAlgoRunning ? 'Running...' : 'Find Path'}
+                        {isAlgoRunning ? (isPaused ? 'Restart Path' : 'Running...') : 'Find Path'}
                     </button>
+
+                    {/* NEW: Timeline Controls */}
+                    <div style={{ marginTop: '15px' }}>
+                        <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                            Speed (steps/frame): {playbackSpeed}
+                        </label>
+                        <input
+                            type="range"
+                            min="1"
+                            max="500"
+                            value={playbackSpeed}
+                            onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+                            style={{ width: '100%' }}
+                        />
+                        <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                            <button
+                                onClick={() => setIsPaused(!isPaused)}
+                                disabled={!isAlgoRunning}
+                                style={{ flex: 1, padding: '8px', cursor: isAlgoRunning ? 'pointer' : 'default', border: '1px solid #ccc', borderRadius: '4px', background: isPaused ? '#e2e8f0' : 'white' }}
+                            >
+                                {isPaused ? 'Resume' : 'Pause'}
+                            </button>
+                            <button
+                                onClick={onStepForward}
+                                disabled={!isAlgoRunning || !isPaused}
+                                style={{ flex: 1, padding: '8px', cursor: (isAlgoRunning && isPaused) ? 'pointer' : 'default', border: '1px solid #ccc', borderRadius: '4px', background: 'white' }}
+                            >
+                                Step
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Stats Readout */}
                     {algoStats && (

@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, useMap, useMapEvents, CircleMarker, Tooltip, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Component to handle programmatic flying
 function MapUpdater({ center }) {
     const map = useMap();
     useEffect(() => {
@@ -13,7 +12,6 @@ function MapUpdater({ center }) {
     return null;
 }
 
-// Intercepts clicks for setting points
 function MapClickHandler({ pickingMode, setPickingMode, setPoints }) {
     useMapEvents({
         click(e) {
@@ -29,18 +27,12 @@ function MapClickHandler({ pickingMode, setPickingMode, setPoints }) {
     return null;
 }
 
-// Tracks the current bounding box of the map to feed into our engine
 function BoundsTracker({ setMapBounds }) {
     const map = useMapEvents({
-        moveend: () => {
-            setMapBounds(map.getBounds());
-        },
-        zoomend: () => {
-            setMapBounds(map.getBounds());
-        }
+        moveend: () => setMapBounds(map.getBounds()),
+        zoomend: () => setMapBounds(map.getBounds())
     });
 
-    // Run once on mount to get initial bounds
     useEffect(() => {
         setMapBounds(map.getBounds());
     }, [map, setMapBounds]);
@@ -48,7 +40,7 @@ function BoundsTracker({ setMapBounds }) {
     return null;
 }
 
-export default function MapPane({ center, points, setPoints, pickingMode, setPickingMode, setMapBounds, graphLines, finalPathCoords }) {
+export default function MapPane({ center, points, setPoints, pickingMode, setPickingMode, setMapBounds, graphLines, finalPathCoords, visitedEdges, frontierCoords }) {
     const isGraphLoaded = graphLines && graphLines.length > 0;
 
     return (
@@ -68,14 +60,9 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
 
                 <MapUpdater center={center} />
                 <BoundsTracker setMapBounds={setMapBounds} />
+                <MapClickHandler pickingMode={pickingMode} setPickingMode={setPickingMode} setPoints={setPoints} />
 
-                <MapClickHandler
-                    pickingMode={pickingMode}
-                    setPickingMode={setPickingMode}
-                    setPoints={setPoints}
-                />
-
-                {/* Render the extracted Graph Edges */}
+                {/* Render the Base Graph Edges */}
                 {isGraphLoaded && graphLines.map((line, idx) => (
                     <Polyline
                         key={`edge-${idx}`}
@@ -84,7 +71,25 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                     />
                 ))}
 
-                {/* NEW: Render the Solved Path */}
+                {/* NEW: Visited Edges (Search Tree) mapped as a MultiPolyline for performance */}
+                {visitedEdges && visitedEdges.length > 0 && (
+                    <Polyline
+                        positions={visitedEdges}
+                        pathOptions={{ color: '#a855f7', weight: 3, opacity: 0.6 }}
+                    />
+                )}
+
+                {/* NEW: Frontier Nodes */}
+                {frontierCoords && frontierCoords.map((coord, idx) => (
+                    <CircleMarker
+                        key={`frontier-${idx}`}
+                        center={coord}
+                        radius={4}
+                        pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.9, weight: 0 }}
+                    />
+                ))}
+
+                {/* Final Resolved Path */}
                 {finalPathCoords && (
                     <Polyline
                         positions={finalPathCoords}

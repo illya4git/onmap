@@ -48,7 +48,7 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
     const isGraphLoaded = graphLines && graphLines.length > 0;
 
     return (
-        <div className="map-wrapper" style={{ backgroundColor: isGraphLoaded ? '#1e1e1e' : 'transparent' }}>
+        <div className={`map-wrapper ${isGraphLoaded ? 'graph-loaded' : ''}`}>
             <MapContainer
                 center={center}
                 zoom={13}

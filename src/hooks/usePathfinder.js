@@ -23,6 +23,10 @@ export function usePathfinder(mapBounds, mapZoom, points) {
     const [visitedEdges, setVisitedEdges] = useState(null);
     const [frontierCoords, setFrontierCoords] = useState(null);
 
+    // NEW: Accumulators to prevent rebuilding arrays from scratch
+    const accumulatedEdgesRef = useRef([]);
+    const lastProcessedCameFromSize = useRef(0);
+
     const handleLoadGraph = async () => {
         if (!mapBounds) return;
         setIsGraphLoading(true);
@@ -49,6 +53,9 @@ export function usePathfinder(mapBounds, mapZoom, points) {
         setFrontierCoords(null);
         setIsAlgoRunning(false);
 
+        accumulatedEdgesRef.current = [];
+        lastProcessedCameFromSize.current = 0;
+
         if (runnerRef.current) {
             runnerRef.current.stop();
             runnerRef.current = null;
@@ -57,17 +64,31 @@ export function usePathfinder(mapBounds, mapZoom, points) {
 
     // Callback fired by the runner every frame
     const handleAlgorithmUpdate = (algo) => {
-        const vEdges = [];
-        for (const [nodeId, parentId] of algo.cameFrom.entries()) {
-            const node = engineRef.current.graph.nodes.get(nodeId);
-            const parent = engineRef.current.graph.nodes.get(parentId);
-            if (node && parent) {
-                vEdges.push([[parent.lat, parent.lon], [node.lat, node.lon]]);
-            }
-        }
-        setVisitedEdges(vEdges);
+        let i = 0;
+        let addedNewEdges = false;
 
-        const fCoords = algo.frontier.map(id => {
+        // 1. Only process NEW entries added to the cameFrom map since the last frame
+        for (const [nodeId, parentId] of algo.cameFrom.entries()) {
+            if (i >= lastProcessedCameFromSize.current) {
+                const node = engineRef.current.graph.nodes.get(nodeId);
+                const parent = engineRef.current.graph.nodes.get(parentId);
+                if (node && parent) {
+                    accumulatedEdgesRef.current.push([[parent.lat, parent.lon], [node.lat, node.lon]]);
+                    addedNewEdges = true;
+                }
+            }
+            i++;
+        }
+
+        lastProcessedCameFromSize.current = algo.cameFrom.size;
+
+        // Only trigger a React state update if we actually found new edges
+        if (addedNewEdges) {
+            setVisitedEdges([...accumulatedEdgesRef.current]);
+        }
+
+        // 2. Fetch the frontier using our newly optimized method
+        const fCoords = algo.getFrontier().map(id => {
             const n = engineRef.current.graph.nodes.get(id);
             return n ? [n.lat, n.lon] : null;
         }).filter(Boolean);
@@ -122,6 +143,9 @@ export function usePathfinder(mapBounds, mapZoom, points) {
         setVisitedEdges(null);
         setFrontierCoords(null);
         setAlgoStats(null);
+
+        accumulatedEdgesRef.current = [];
+        lastProcessedCameFromSize.current = 0;
 
         runner.start();
     };

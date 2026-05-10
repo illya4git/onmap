@@ -115,4 +115,8 @@ export class PathfindingAlgorithm {
         this.path = [];
         this.stats.executionTimeMs = performance.now() - this.startTime;
     }
+
+    getFrontier() {
+        return this.frontier;
+    }
 }

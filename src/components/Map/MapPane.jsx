@@ -70,22 +70,12 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                 <MapClickHandler pickingMode={pickingMode} setPickingMode={setPickingMode} setPoints={setPoints} />
 
                 {/* Render the Base Graph Edges */}
-                {isGraphLoaded && graphLines.map((line, idx) => (
+                {isGraphLoaded && (
                     <Polyline
-                        key={`edge-${idx}`}
-                        positions={line}
+                        positions={graphLines}
                         pathOptions={{ color: '#3b82f6', weight: 2, opacity: 0.5 }}
                     />
-                ))}
-
-                {/* Render the Base Graph Edges */}
-                {isGraphLoaded && graphLines.map((line, idx) => (
-                    <Polyline
-                        key={`edge-${idx}`}
-                        positions={line}
-                        pathOptions={{ color: '#3b82f6', weight: 2, opacity: 0.5 }}
-                    />
-                ))}
+                )}
 
                 {/* NEW: Visited Edges (Search Tree) mapped as a MultiPolyline for performance */}
                 {visitedEdges && visitedEdges.length > 0 && (

@@ -1,44 +1,5 @@
+import { PriorityQueue } from "../PriorityQueue.js";
 import { PathfindingAlgorithm } from './PathfindingAlgorithm';
-
-/**
- * A lightweight Priority Queue for Dijkstra.
- * Enqueue is O(1). Dequeue is O(N) but uses a fast swap-and-pop technique.
- * For production grids, a Binary Min-Heap is faster, but this is perfect for UI visualizations.
- */
-class PriorityQueue {
-    constructor() {
-        this.elements = [];
-    }
-
-    enqueue(element, priority) {
-        this.elements.push({ element, priority });
-    }
-
-    dequeue() {
-        if (this.isEmpty()) return null;
-
-        let minIndex = 0;
-        for (let i = 1; i < this.elements.length; i++) {
-            if (this.elements[i].priority < this.elements[minIndex].priority) {
-                minIndex = i;
-            }
-        }
-
-        const item = this.elements[minIndex];
-
-        // Fast removal: swap the minimum element with the last element, then pop
-        const last = this.elements.pop();
-        if (minIndex < this.elements.length) {
-            this.elements[minIndex] = last;
-        }
-
-        return item.element;
-    }
-
-    isEmpty() {
-        return this.elements.length === 0;
-    }
-}
 
 export class Dijkstra extends PathfindingAlgorithm {
     initialize() {
@@ -95,14 +56,17 @@ export class Dijkstra extends PathfindingAlgorithm {
             }
         }
 
-        // Sync the visualization frontier with the priority queue's current elements
-        this.frontier = this.pq.elements.map(item => item.element);
-        this.updateMaxFrontier(this.frontier.length);
+        this.updateMaxFrontier(this.pq.elements.length);
 
         return {
             type: 'STEP',
             current: currentId,
             frontier: [...this.frontier]
         };
+    }
+
+    getFrontier() {
+        // Only run this O(N) map operation when the UI explicitly asks for it
+        return this.pq.elements.map(item => item.element);
     }
 }

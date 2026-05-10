@@ -6,15 +6,29 @@ export class PathfindingEngine {
     }
 
     // Fetches street data from OpenStreetMap via Overpass API
-    async loadGraphFromBounds(bounds) {
+    async loadGraphFromBounds(bounds, zoomLevel = 15) {
         const { _southWest, _northEast } = bounds;
 
-        // Query OpenStreetMap for highways (roads) within the bounding box
-        // Excluding pedestrian and footways for vehicle routing (can be adjusted)
+        // Level of Detail (LOD) logic based on zoom level
+        let highwayFilter;
+        if (zoomLevel <= 12) {
+            // Very zoomed out: Only the absolute biggest highways
+            highwayFilter = '["highway"~"motorway|trunk"]';
+        } else if (zoomLevel <= 14) {
+            // City view: Include primary and secondary arteries
+            highwayFilter = '["highway"~"motorway|trunk|primary|secondary"]';
+        } else if (zoomLevel <= 16) {
+            // Neighborhood view: Include tertiary and residential
+            highwayFilter = '["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|residential"]';
+        } else {
+            // Street level (17+): All drivable roads
+            highwayFilter = '["highway"]["highway"!~"pedestrian|footway|path|steps|track|cycleway"]';
+        }
+
         const query = `
             [out:json][timeout:25];
             (
-              way["highway"]["highway"!~"pedestrian|footway|path|steps"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});
+              way${highwayFilter}(${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});
             );
             (._;>;);
             out body;

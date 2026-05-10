@@ -63,13 +63,9 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                 )}
 
                 <MapUpdater center={center} />
-
-                {/* Updated BoundsTracker to pass setMapZoom */}
                 <BoundsTracker setMapBounds={setMapBounds} setMapZoom={setMapZoom} />
-
                 <MapClickHandler pickingMode={pickingMode} setPickingMode={setPickingMode} setPoints={setPoints} />
 
-                {/* Render the Base Graph Edges */}
                 {isGraphLoaded && (
                     <Polyline
                         positions={graphLines}
@@ -77,7 +73,6 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                     />
                 )}
 
-                {/* NEW: Visited Edges (Search Tree) mapped as a MultiPolyline for performance */}
                 {visitedEdges && visitedEdges.length > 0 && (
                     <Polyline
                         positions={visitedEdges}
@@ -85,7 +80,6 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                     />
                 )}
 
-                {/* NEW: Frontier Nodes */}
                 {frontierCoords && frontierCoords.map((coord, idx) => (
                     <CircleMarker
                         key={`frontier-${idx}`}
@@ -94,8 +88,7 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                         pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.9, weight: 0 }}
                     />
                 ))}
-
-                {/* Final Resolved Path */}
+                
                 {finalPathCoords && (
                     <Polyline
                         positions={finalPathCoords}

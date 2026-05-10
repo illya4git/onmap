@@ -5,11 +5,9 @@ export class PathfindingEngine {
         this.graph = new Graph();
     }
 
-    // Fetches street data from OpenStreetMap via Overpass API
     async loadGraphFromBounds(bounds, zoomLevel = 15) {
         const { _southWest, _northEast } = bounds;
 
-        // Level of Detail (LOD) logic based on zoom level
         let highwayFilter;
         if (zoomLevel <= 12) {
             // Very zoomed out: Only the absolute biggest highways
@@ -54,13 +52,11 @@ export class PathfindingEngine {
         }
     }
 
-    // Converts OSM JSON response into our OOP Graph
     parseOSMData(elements) {
         this.graph.clear();
 
         const ways = [];
 
-        // 1. First pass: Extract all nodes
         for (const el of elements) {
             if (el.type === 'node') {
                 this.graph.addNode(new GraphNode(el.id, el.lat, el.lon));
@@ -69,7 +65,6 @@ export class PathfindingEngine {
             }
         }
 
-        // 2. Second pass: Create edges from ways
         for (const way of ways) {
             const nodeIds = way.nodes;
             const isOneWay = way.tags && (way.tags.oneway === 'yes' || way.tags.oneway === '1');
@@ -91,7 +86,6 @@ export class PathfindingEngine {
         console.log(`Graph parsed with ${this.graph.nodes.size} nodes.`);
     }
 
-    // Standard formula to get distance in meters between two lat/lon points
     calculateHaversineDistance(lat1, lon1, lat2, lon2) {
         const R = 6371e3; // Earth radius in meters
         const φ1 = lat1 * Math.PI / 180;
@@ -104,7 +98,7 @@ export class PathfindingEngine {
             Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return R * c; // Distance in meters
+        return R * c;
     }
 
     getRenderableEdges() {
@@ -115,7 +109,6 @@ export class PathfindingEngine {
             for (const edge of node.edges) {
                 const targetNode = this.graph.nodes.get(edge.targetNodeId);
                 if (targetNode) {
-                    // Create a unique key to avoid drawing undirected edges twice
                     const edgeKey = [nodeId, targetNode.id].sort().join('-');
                     if (!drawn.has(edgeKey)) {
                         lines.push([

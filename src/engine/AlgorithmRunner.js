@@ -1,8 +1,8 @@
 export class AlgorithmRunner {
     constructor(algorithm, onUpdate, onFinish) {
         this.algorithm = algorithm;
-        this.onUpdate = onUpdate; // Callback for when a frame finishes
-        this.onFinish = onFinish; // Callback for when the path is found
+        this.onUpdate = onUpdate;
+        this.onFinish = onFinish;
 
         this.playbackSpeed = 50;
         this.isPaused = false;
@@ -11,7 +11,7 @@ export class AlgorithmRunner {
 
     start() {
         this.isPaused = false;
-        this.stop(); // Ensure no duplicate loops
+        this.stop();
         this.loop();
     }
 
@@ -49,23 +49,19 @@ export class AlgorithmRunner {
         }
     }
 
-    // Arrow function preserves 'this' context
     loop = () => {
         if (this.isPaused || this.algorithm.isFinished) {
             this.stop();
             return;
         }
 
-        // Process a batch of steps per frame based on speed
         for (let i = 0; i < this.playbackSpeed; i++) {
             this.algorithm.step();
             if (this.algorithm.isFinished) break;
         }
 
-        // Emit an update to React after the batch
         this.onUpdate(this.algorithm);
 
-        // Check if we hit the end during this batch
         if (this.algorithm.isFinished) {
             this.stop();
             this.onFinish(this.algorithm);

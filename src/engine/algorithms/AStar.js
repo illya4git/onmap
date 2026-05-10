@@ -7,18 +7,14 @@ export class AStar extends PathfindingAlgorithm {
 
         this.pq = new PriorityQueue();
 
-        // gScore: The exact distance from the start node to the current node
         this.gScore = new Map();
         this.gScore.set(this.startNodeId, 0);
 
-        // fScore: gScore + heuristic (estimated total distance to the end)
-        // We prioritize the queue based on the lowest fScore.
         this.fScore = new Map();
         const startHeuristic = this.heuristic(this.startNodeId, this.endNodeId);
+
         this.fScore.set(this.startNodeId, startHeuristic);
-
         this.pq.enqueue(this.startNodeId, startHeuristic);
-
         this.frontier = [this.startNodeId];
     }
 
@@ -30,19 +26,15 @@ export class AStar extends PathfindingAlgorithm {
             return { type: 'NO_PATH', stats: this.stats };
         }
 
-        // 1. Extract the node with the lowest estimated total cost (fScore)
         const currentId = this.pq.dequeue();
         this.stats.nodesExplored++;
-
         this.visited.add(currentId);
 
-        // 2. Check victory condition
         if (currentId === this.endNodeId) {
             this.reconstructPath(currentId);
             return { type: 'PATH_FOUND', path: this.path, stats: this.stats };
         }
 
-        // 3. Process neighbors
         const node = this.graph.nodes.get(currentId);
 
         if (node) {
@@ -77,15 +69,9 @@ export class AStar extends PathfindingAlgorithm {
     }
 
     getFrontier() {
-        // Only run this O(N) map operation when the UI explicitly asks for it
         return this.pq.elements.map(item => item.element);
     }
 
-    /**
-     * The Heuristic Function: Straight-line Haversine distance to the target.
-     * To be optimal, a heuristic MUST be "admissible" (it can never overestimate the real distance).
-     * Since the shortest path between two points on Earth is a straight line, Haversine is perfect.
-     */
     heuristic(nodeAId, nodeBId) {
         const nodeA = this.graph.nodes.get(nodeAId);
         const nodeB = this.graph.nodes.get(nodeBId);

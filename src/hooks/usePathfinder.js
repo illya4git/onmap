@@ -3,11 +3,11 @@ import { PathfindingEngine } from '../engine/PathfindingEngine';
 import { BreadthFirstSearch } from '../engine/algorithms/BFS';
 import { Dijkstra } from '../engine/algorithms/Dijkstra';
 import { AStar } from '../engine/algorithms/AStar';
-import { AlgorithmRunner } from '../engine/AlgorithmRunner'; // Import the new runner
+import { AlgorithmRunner } from '../engine/AlgorithmRunner';
 
 export function usePathfinder(mapBounds, mapZoom, points) {
     const engineRef = useRef(new PathfindingEngine());
-    const runnerRef = useRef(null); // Keep track of the runner instead of the loop
+    const runnerRef = useRef(null);
 
     const [isGraphLoading, setIsGraphLoading] = useState(false);
     const [graphStats, setGraphStats] = useState(null);
@@ -23,7 +23,6 @@ export function usePathfinder(mapBounds, mapZoom, points) {
     const [visitedEdges, setVisitedEdges] = useState(null);
     const [frontierCoords, setFrontierCoords] = useState(null);
 
-    // NEW: Accumulators to prevent rebuilding arrays from scratch
     const accumulatedEdgesRef = useRef([]);
     const lastProcessedCameFromSize = useRef(0);
 
@@ -62,12 +61,10 @@ export function usePathfinder(mapBounds, mapZoom, points) {
         }
     };
 
-    // Callback fired by the runner every frame
     const handleAlgorithmUpdate = (algo) => {
         let i = 0;
         let addedNewEdges = false;
 
-        // 1. Only process NEW entries added to the cameFrom map since the last frame
         for (const [nodeId, parentId] of algo.cameFrom.entries()) {
             if (i >= lastProcessedCameFromSize.current) {
                 const node = engineRef.current.graph.nodes.get(nodeId);
@@ -82,12 +79,10 @@ export function usePathfinder(mapBounds, mapZoom, points) {
 
         lastProcessedCameFromSize.current = algo.cameFrom.size;
 
-        // Only trigger a React state update if we actually found new edges
         if (addedNewEdges) {
             setVisitedEdges([...accumulatedEdgesRef.current]);
         }
 
-        // 2. Fetch the frontier using our newly optimized method
         const fCoords = algo.getFrontier().map(id => {
             const n = engineRef.current.graph.nodes.get(id);
             return n ? [n.lat, n.lon] : null;
@@ -97,7 +92,6 @@ export function usePathfinder(mapBounds, mapZoom, points) {
         setAlgoStats({...algo.stats});
     };
 
-    // Callback fired by the runner when a path is found (or fails)
     const handleAlgorithmFinish = (algo) => {
         setIsAlgoRunning(false);
         setAlgoStats(algo.stats);
@@ -150,7 +144,6 @@ export function usePathfinder(mapBounds, mapZoom, points) {
         runner.start();
     };
 
-    // Proxy functions to sync React state with the Runner
     const setPlaybackSpeed = (speed) => {
         setPlaybackSpeedState(speed);
         if (runnerRef.current) runnerRef.current.setSpeed(speed);

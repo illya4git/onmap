@@ -1,6 +1,4 @@
 export default function PointInput({ type, label, point, setPoint, pickingMode, setPickingMode }) {
-
-    // Helper to handle manual typed input
     const handleCoordinateChange = (index, value) => {
         const newPoint = point ? [...point] : ['', ''];
         newPoint[index] = value;

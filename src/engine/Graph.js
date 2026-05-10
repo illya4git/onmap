@@ -1,7 +1,7 @@
 export class GraphEdge {
     constructor(targetNodeId, weight, isOneWay = false) {
         this.targetNodeId = targetNodeId;
-        this.weight = weight; // Distance in meters
+        this.weight = weight;
         this.isOneWay = isOneWay;
     }
 }
@@ -11,7 +11,7 @@ export class GraphNode {
         this.id = id;
         this.lat = lat;
         this.lon = lon;
-        this.edges = []; // Adjacency list
+        this.edges = [];
     }
 
     addEdge(edge) {
@@ -21,7 +21,7 @@ export class GraphNode {
 
 export class Graph {
     constructor() {
-        this.nodes = new Map(); // Maps node ID to GraphNode
+        this.nodes = new Map();
     }
 
     addNode(node) {

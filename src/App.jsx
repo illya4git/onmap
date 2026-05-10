@@ -5,10 +5,7 @@ import { usePathfinder } from './hooks/usePathfinder';
 import './App.css';
 
 export default function App() {
-    // 1. Initialize Map State
     const mapState = useMapState();
-
-    // 2. Initialize Pathfinder Engine State (passing necessary map context)
     const pathfinder = usePathfinder(mapState.mapBounds, mapState.mapZoom, mapState.points);
 
     return (

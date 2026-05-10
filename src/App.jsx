@@ -11,6 +11,7 @@ export default function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [mapCenter, setMapCenter] = useState([50.4501, 30.5234]);
     const [mapBounds, setMapBounds] = useState(null);
+    const [mapZoom, setMapZoom] = useState(13);
 
     const engineRef = useRef(new PathfindingEngine());
     const activeAlgoRef = useRef(null);
@@ -48,7 +49,8 @@ export default function App() {
         setIsGraphLoading(true);
         handleClearGraph();
 
-        const result = await engineRef.current.loadGraphFromBounds(mapBounds);
+        // Pass both bounds and mapZoom to the engine
+        const result = await engineRef.current.loadGraphFromBounds(mapBounds, mapZoom);
 
         if (result.success) {
             setGraphStats({ nodes: result.nodes });
@@ -204,12 +206,12 @@ export default function App() {
                 onRunAlgorithm={handleRunAlgorithm}
                 isAlgoRunning={isAlgoRunning}
                 algoStats={algoStats}
-
                 playbackSpeed={playbackSpeed}
                 setPlaybackSpeed={setPlaybackSpeed}
                 isPaused={isPaused}
                 setIsPaused={setIsPaused}
                 onStepForward={handleStepForward}
+                mapZoom={mapZoom} // NEW: Pass to Sidebar
             />
             <MapPane
                 center={mapCenter}
@@ -218,6 +220,7 @@ export default function App() {
                 pickingMode={pickingMode}
                 setPickingMode={setPickingMode}
                 setMapBounds={setMapBounds}
+                setMapZoom={setMapZoom} // NEW: Pass to MapPane
                 graphLines={graphLines}
                 finalPathCoords={finalPathCoords}
                 visitedEdges={visitedEdges}

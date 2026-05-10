@@ -5,7 +5,7 @@ export default function Sidebar({
                                     isOpen, toggleSidebar, setMapCenter,
                                     points, setPoints,
                                     pickingMode, setPickingMode,
-                                    onLoadGraph, onClearGraph, isGraphLoading, graphStats,
+                                    onLoadGraph, onClearGraph, isGraphLoading, graphStats, mapZoom,
                                     activeAlgorithm, setActiveAlgorithm, onRunAlgorithm, isAlgoRunning, algoStats,
                                     playbackSpeed, setPlaybackSpeed, isPaused, setIsPaused, onStepForward
                                 }) {
@@ -30,13 +30,27 @@ export default function Sidebar({
                 <div className="control-group">
                     <h3>Network Graph</h3>
                     {!graphStats ? (
-                        <button
-                            onClick={onLoadGraph}
-                            disabled={isGraphLoading}
-                            style={{ padding: '8px', width: '100%', cursor: 'pointer', marginBottom: '10px' }}
-                        >
-                            {isGraphLoading ? 'Downloading & Parsing...' : 'Load Area into Engine'}
-                        </button>
+                        <>
+                            {/* NEW: LOD Readout */}
+                            <p style={{fontSize: '0.8rem', color: '#666', marginBottom: '10px', lineHeight: '1.4'}}>
+                                <strong>Zoom: {mapZoom}</strong><br/>
+                                {mapZoom <= 12 && "LOD: Motorways & Trunks Only"}
+                                {mapZoom > 12 && mapZoom <= 14 && "LOD: Up to Secondary Roads"}
+                                {mapZoom > 14 && mapZoom <= 16 && "LOD: Up to Residential Roads"}
+                                {mapZoom > 16 && "LOD: All drivable roads"}
+                            </p>
+
+                            <button
+                                onClick={onLoadGraph}
+                                disabled={isGraphLoading || mapZoom < 8}
+                                style={{
+                                    padding: '8px', width: '100%', marginBottom: '10px',
+                                    cursor: (isGraphLoading || mapZoom < 8) ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                {isGraphLoading ? 'Downloading & Parsing...' : (mapZoom < 8 ? 'Zoom in closer to load graph' : 'Load Area into Engine')}
+                            </button>
+                        </>
                     ) : (
                         <>
                             <p style={{fontSize: '0.85rem', color: '#16a34a', marginBottom: '10px', fontWeight: 'bold'}}>

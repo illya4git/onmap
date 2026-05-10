@@ -27,20 +27,24 @@ function MapClickHandler({ pickingMode, setPickingMode, setPoints }) {
     return null;
 }
 
-function BoundsTracker({ setMapBounds }) {
+function BoundsTracker({ setMapBounds, setMapZoom }) {
     const map = useMapEvents({
         moveend: () => setMapBounds(map.getBounds()),
-        zoomend: () => setMapBounds(map.getBounds())
+        zoomend: () => {
+            setMapBounds(map.getBounds());
+            setMapZoom(map.getZoom());
+        }
     });
 
     useEffect(() => {
         setMapBounds(map.getBounds());
-    }, [map, setMapBounds]);
+        setMapZoom(map.getZoom());
+    }, [map, setMapBounds, setMapZoom]);
 
     return null;
 }
 
-export default function MapPane({ center, points, setPoints, pickingMode, setPickingMode, setMapBounds, graphLines, finalPathCoords, visitedEdges, frontierCoords }) {
+export default function MapPane({ center, points, setPoints, pickingMode, setPickingMode, setMapBounds, setMapZoom, graphLines, finalPathCoords, visitedEdges, frontierCoords }) {
     const isGraphLoaded = graphLines && graphLines.length > 0;
 
     return (
@@ -59,8 +63,20 @@ export default function MapPane({ center, points, setPoints, pickingMode, setPic
                 )}
 
                 <MapUpdater center={center} />
-                <BoundsTracker setMapBounds={setMapBounds} />
+
+                {/* Updated BoundsTracker to pass setMapZoom */}
+                <BoundsTracker setMapBounds={setMapBounds} setMapZoom={setMapZoom} />
+
                 <MapClickHandler pickingMode={pickingMode} setPickingMode={setPickingMode} setPoints={setPoints} />
+
+                {/* Render the Base Graph Edges */}
+                {isGraphLoaded && graphLines.map((line, idx) => (
+                    <Polyline
+                        key={`edge-${idx}`}
+                        positions={line}
+                        pathOptions={{ color: '#3b82f6', weight: 2, opacity: 0.5 }}
+                    />
+                ))}
 
                 {/* Render the Base Graph Edges */}
                 {isGraphLoaded && graphLines.map((line, idx) => (
